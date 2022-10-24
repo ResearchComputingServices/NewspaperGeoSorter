@@ -4,94 +4,19 @@ from unittest import skip
 import requests
 from bs4 import BeautifulSoup
 
-"""
-Constants used to clean up the code
-"""
-targetHeaders = [   'Dailies',
-                    'Daily_newspapers',
-                    'Daily_Newspapers',
-                    'daily_newspapers',
-                    'Non-Daily_newspapers',
-                    'Nondaily_newspapers',
-                    'Daily_newspapers_(currently_published)',
-                    'Daily_newspapers_and_Online_Publications_(currently_published)',
-                    'Weeklies'
-                    'Weekly_newspapers',
-                    'Weekly_newspapers',
-                    'Weekly_and_other_newspapers',
-                    'Weekly_newspapers_(currently_published)',
-                    'Biweekly_newspapers',
-                    'Biweekly_newspapers_(currently_published)',
-                    'Monthly_newspapers',
-                    'Monthly_newspapers_(currently_published)',
-                    'University_newspapers',
-                    'University_newspaper',
-                    'Daily_and_nondaily_newspapers',
-                    'Daily_and_nondaily_newspapers_(currently_published)',
-                    'Daily_and_weekly_newspapers_(currently_published)',
-                    'List_of_newspapers',
-                    'Current_news_publications',
-                    'Newspapers_of_record',
-                    'Regional_papers',
-                    'Regional_and_local',
-                    'Daily,_weekly,_online_newspapers_(currently_published)',
-                    'Major_daily_newspapers',
-                    'Special_interest_newspapers',
-                    'Community_papers',
-                    'Daily_and_weekly_newspapers_(currently_published_in_Colorado)',
-                    'Smaller_newspapers',
-                    'Daily,_weekly,_and_other_newspapers',
-                    'College_newspapers',
-                    'Major_daily',
-                    'Major_papers',
-                    'Refional_and_local',
-                    'College']
-
-stateNames = [  'Alabama', 'Alaska', 'Arkansas', 'American_Samoa', 'Arizona',
-                'California', 'Colorado', 'Connecticut', 'Washington,_D.C.', 'Delaware',
-                'Florida', 'Georgia_(U.S._state)', 'Guam', 'Hawaii', 'Iowa', 'Idaho', 'Illinois', 'Indiana',
-                'Kansas', 'Kentucky', 'Louisiana', 'Massachusetts', 'Maryland', 'Maine', 'Michigan',
-                'Minnesota', 'Missouri', 'Mississippi', 'Montana', 'North_Carolina', 'North_Dakota',
-                'Nebraska', 'New_Hampshire', 'New_Jersey', 'New_Mexico', 'Nevada', 'New_York', 'Ohio',
-                'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto_Rico', 'Rhode_Island', 'South_Carolina',
-                'South_Dakota', 'Tennessee', 'Texas', 'Utah', 'Virginia', 'the_United_States_Virgin_Islands', 'Vermont',
-                'Washington_(state)', 'Wisconsin', 'West_Virginia', 'Wyoming']
-
-testStateNames = ['Michigan']
-
-skipWords = ['University', 'College', 'Institute' ]
-
-baseWikiURL = 'https://en.wikipedia.org'
-baseStateNewsPapersURL = baseWikiURL + '/wiki/List_of_newspapers_in_'
-
-numberOfAttempts = 10
-
-resultsDirectory = './Wiki_Output'
-
-failedTerms = ['Dead Wiki Link', 'No URL Found', 'URL Not Found', 'No URL Found in infobox']
+from scraperUtil import *
 
 """
 Helper Functions
 """
-# This function takes in a URL and returns a BeautifulSoup parsed object
-def ParseWebpage(webpageURL):
-
-    webPage = requests.get(webpageURL)
-    webPageParsed = BeautifulSoup(webPage.content, 'html.parser')
-
-    return webPageParsed
-
 # This function takes in the wiki URL for a newspaper and searchs the infobox located
 # in the top right corner for the newspapers URL and returns it.
 def HandleNewsPaperWiki(newsPaperWikiURL):
-    fullNewspaperWikiURL = baseWikiURL+newsPaperWikiURL
+    fullNewspaperWikiURL = wikiBaseURL+newsPaperWikiURL
+    newspaperWebPageParsed = ParseWebpage(fullNewspaperWikiURL)
 
     newspaperURL = 'URL Not Found'
-
-    # TODO: Replace this with a call to ParseWebpage
-    newspaperWebPage = requests.get(fullNewspaperWikiURL)
-    newspaperWebPageParsed = BeautifulSoup(newspaperWebPage.content, 'html.parser')
-
+   
     # Get the infocard element which contains the newspapers URL in the final row
     infoCardElement = newspaperWebPageParsed.find('table', class_='infobox vcard')
 
@@ -222,7 +147,7 @@ def HandleUnorderedList(uListElement):
 def WriteToFile(state, listOfPairs):
 
     filename = '/'+ state + '.csv'
-    file = open(resultsDirectory+filename,"w")
+    file = open(wikiResultsDirectory+filename,"w")
 
     for pair in listOfPairs:
         outputLine = pair[0] + ',' + pair[1] + '\n'
@@ -258,10 +183,7 @@ for state in stateNames:
     stateURL = baseStateNewsPapersURL + state
 
     # This block of code retrieves the table on the state newspapers website
-    # TODO: Replace this with a call to ParseWebpage
-    stateWebpage = requests.get(stateURL)
-    stateWebpageContents = stateWebpage.content
-    stateWebpageContentsParsed = BeautifulSoup(stateWebpageContents, 'html.parser')
+    stateWebpageContentsParsed = ParseWebpage(stateURL)
 
     # Look for all the <h2> tags
     sectionHeaders = stateWebpageContentsParsed.find_all('h2')
