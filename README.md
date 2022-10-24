@@ -24,9 +24,9 @@ The **WebScrapers** folder contains 3 python scripts which scrape data from diff
 
 No command line args required. The output from these scrapers are space seperated files for each state containing the papers name and it's base URL. For example the first few entries in **Alabama.csv** are:
 
-`Sand Mountain Reporter 	http://www.sandmountainreporter.com/`
-`Alexander City Outlook 	http://www.alexcityoutlook.com/` 
-`Andalusia Star-News 	    http://www.andalusiastarnews.com/`
+`Sand Mountain Reporter 	http://www.sandmountainreporter.com/` <br>
+`Alexander City Outlook 	http://www.alexcityoutlook.com/` <br>
+`Andalusia Star-News 	    http://www.andalusiastarnews.com/` <br>
 
 ## State Newspaper directory
 
