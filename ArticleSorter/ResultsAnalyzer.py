@@ -1,4 +1,6 @@
-from Util import *
+import os
+
+import Util
 
 ############################################################
 
@@ -6,7 +8,7 @@ def GetURLList(filename):
     
     listOfURLs = []
     
-    inputFile = open(statePaperFilesLocation + filename)
+    inputFile = open(Util.statePaperFilesLocation + filename)
     lines = inputFile.readlines()
 
     for line in lines:
@@ -27,7 +29,7 @@ def GetURLList(filename):
 
 ############################################################
 
-statePaperFiles = os.listdir(statePaperFilesLocation)
+statePaperFiles = os.listdir(Util.statePaperFilesLocation)
 
 listOfLists = []
 listOfStates = []
