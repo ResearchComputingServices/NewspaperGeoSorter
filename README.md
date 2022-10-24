@@ -44,10 +44,10 @@ The **ArticleSorter** folder contains 5 python scripts and a bash script. The *R
 
 where,
 
--- `\<year\>,\<month\>`   the year and month of the input data ex. 2016,March
--- `\<input_dir\>`        the file path to the base of the input data directory tree
--- `\<output_dir\>`       the file path to the base where to save the data too
--- `\<newspaper_dir\>`    the file path to the base of where the state sorted newspaper files are (ie. the output of *combinedScript.py*)
+⋅⋅⋅`\<year\>,\<month\>`   the year and month of the input data ex. 2016,March
+⋅⋅⋅`\<input_dir\>`        the file path to the base of the input data directory tree
+⋅⋅⋅`\<output_dir\>`       the file path to the base where to save the data too
+⋅⋅⋅`\<newspaper_dir\>`    the file path to the base of where the state sorted newspaper files are (ie. the output of *combinedScript.py*)
 
 
 the output of the *ArticleSorter.py* is a directory tree organized as follows:
