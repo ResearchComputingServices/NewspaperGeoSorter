@@ -160,8 +160,6 @@ def HandleTable(tableElement):
         pair = HandleTableCell(row)
         listOfPairs.append(pair)
 
-    #print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TABLE SEARCH COMPLETED ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
     return listOfPairs
 
 # This is a quick helper function that searchs a string to see if it contains a string listed in skipWords
@@ -217,9 +215,6 @@ def HandleUnorderedList(uListElement):
                 listOfPairs.append(pair)
 
                 break
-        
-        #input()
-    
 
     return listOfPairs
 
@@ -230,7 +225,6 @@ def WriteToFile(state, listOfPairs):
     file = open(resultsDirectory+filename,"w")
 
     for pair in listOfPairs:
-        #print(pair[0],' : ', pair[1])
         outputLine = pair[0] + ',' + pair[1] + '\n'
         file.write(outputLine)
 
@@ -261,7 +255,6 @@ The actual code starts here
 for state in stateNames:
     listOfPairs = []
 
-    #print('Searching in state: ', state)
     stateURL = baseStateNewsPapersURL + state
 
     # This block of code retrieves the table on the state newspapers website
@@ -299,8 +292,6 @@ for state in stateNames:
                     noTargetHeadersFound = False
                     #print('FOUND')
 
-        #input()
-
         # If the header matches a target header we then need to determine if the section
         # contains a Table or an unodered list.
         if isTarget:
@@ -320,18 +311,13 @@ for state in stateNames:
                     #print('ULIST FOUND')
                     newListOfPairs = HandleUnorderedList(nextSibling)
                     break
-                #else:
-                    #print('None target element found: ', nextSibling.name, ' SKIP')
                 
                 iAttempts += 1
-
-            #print('~~~~~~~~~~~~~ END OF CURRENT HEADER ~~~~~~~~~~~~~~~~~')
 
             listOfPairs.extend(newListOfPairs)
 
     # Output the results
     print(state, " : ", len(listOfPairs) , ' (', CheckResults(listOfPairs),')')
     WriteToFile(state,listOfPairs)
-    #print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
 

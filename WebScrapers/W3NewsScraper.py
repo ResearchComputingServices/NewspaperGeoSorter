@@ -40,7 +40,6 @@ for state in stateNamesList:
         allH3Links = h3Section.find_all('a',href=True)
 
         for link in allH3Links:
-            # print(link.string, ' : ', link['href'])
             outputFile.write(link.string + ' : '+ link['href']+'\n')
             counter += 1
 

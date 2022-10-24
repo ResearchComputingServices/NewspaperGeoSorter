@@ -101,7 +101,6 @@ for stateName in stateNamesList:
         for aRow in allTableRows:
             linksInRow = aRow.find_all('a', href=True)
             if len(linksInRow) >= 2:
-                #print(linksInRow[0].string, ",",linksInRow[1]['href'])
                 paperCounter += 1
                 outputFile.write(linksInRow[0].string+","+linksInRow[1]['href']+'\n')
 
