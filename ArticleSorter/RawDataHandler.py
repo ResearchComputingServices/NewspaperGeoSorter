@@ -3,7 +3,7 @@ import os
 import re
 import fnmatch
 
-from Util import *
+import Util
 
 from curses.ascii import isspace
 from urllib.parse import urlsplit, urlunsplit
@@ -23,7 +23,7 @@ def SanitizeDataRows(dataRows, year, month):
         # check that the nextRow starts with a datestamp if not the data is corrupted and we need to merge the rows
         nextRowTokenized = nextRow.split(',')
        
-        filtered = fnmatch.filter(nextRowTokenized[:2], dateStampWildcard)
+        filtered = fnmatch.filter(nextRowTokenized[:2], Util.dateStampWildcard)
        
         if len(filtered) == 0:
             dataRows[iRow] = curRow+nextRow
@@ -63,7 +63,7 @@ def SanitizeRow(row):
 def GetDataFrame(year, month, filename, debugFlag = False):
     
     # Open the file for reading and store it as one big string
-    inputFileLocation = dataLocationBase + year + '/' + month + '/CSV/' + filename   
+    inputFileLocation = Util.dataLocationBase + year + '/' + month + '/CSV/' + filename   
     inputFile = open(inputFileLocation,'r')
     
     dataRows = inputFile.readlines()
@@ -89,7 +89,7 @@ def GetDataFrame(year, month, filename, debugFlag = False):
 
     if debugFlag:
         for row in dataFrame:
-            DisplayRow(row)
+            Util.DisplayRow(row)
             if not len(row) == 6:
                 input()
 
@@ -102,14 +102,14 @@ def GetDataFrame(year, month, filename, debugFlag = False):
 # Test code starts here
 #################################################################################################################################
 """
-listOfYearDirs = listdir_nohidden(dataLocationBase)
+listOfYearDirs = listdir_nohidden(Util.dataLocationBase)
 
 for year in listOfYearDirs:
-    listOfMonthDirs = listdir_nohidden(dataLocationBase+year)
+    listOfMonthDirs = listdir_nohidden(Util.dataLocationBase+year)
 
     for month in listOfMonthDirs:
 
-        currentDirectory = dataLocationBase+year+'/'+month+'/CSV/'
+        currentDirectory = Util.dataLocationBase+year+'/'+month+'/CSV/'
 
         listOfFiles = listdir_nohidden(currentDirectory)
 
@@ -118,6 +118,6 @@ for year in listOfYearDirs:
             currentDataFrame = GetDataFrame(year, month, filename)
 
             for row in currentDataFrame:
-                DisplayRow(row)
+                Util.DisplayRow(row)
             input()
 """

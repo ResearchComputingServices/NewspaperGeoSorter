@@ -12,17 +12,14 @@ monthList = [   'January', 'February', 'March', 'April',
                 'May', 'June', 'July', 'August', 
                 'September', 'October', 'November', 'December'] 
 
-statePaperFilesLocation = '../StateNewsPaperFiles/Combined/'
+# Location of the newspapers sorted by state
+statePaperFilesLocation =''
 
 # Location of the data set
-#dataLocationBase = '/Volumes/BaChu$/CC-NEWS-EN/'           # this is the location of the data when I run the code locally
-dataLocationBase = '/home/nickshiell/storage/CC-NEWS-EN/'   # This is the production run location when on the VM
-#dataLocationBase = '/home/nickshiell/storage/TestSet/DebugSet/'     # This is the test run location when on the VM
-#dataLocationBase = '/home/nickshiell/storage/TestSet/'     # This is the test run location when on the VM
+dataLocationBase = ''
 
 # This folder will contain files all the output
-resultsOutputDirectory = '/home/nickshiell/storage/SortedByState/'
-#resultsOutputDirectory = '/home/nickshiell/storage/TestSet/DebugSortedByState/'
+resultsOutputDirectory = ''
 
 
 # URL to ignore when loading state newspaper lists
@@ -258,7 +255,6 @@ def SaveSortedArticles(year,month,metaDataList,articleDictionary):
         length = curRow[2].strip()
         title = curRow[3].strip()
         UID = curRow[4].strip()
-        #article = 'ARTICLE'
         article = articleDictionary[UID].strip()
         outputStr = date+','+fullURL+','+length+','+title+','+article+'\n'
         outputFile.write(outputStr)              
@@ -307,13 +303,7 @@ def SaveResultsToFile(dataFrame, maxLength = 750):
             if len(item) < maxLength:
                 outputStr += item.strip() + ','
             itemCounter += 1
-        
-        #for item in curRow: 
-        #    if len(item) < maxLength:
-        #        outputStr += item.strip() + ','
-        #    else:
-        #        outputStr += ('ARTICLE,')    
-    
+            
         outputFile.write(outputStr[:-1]+'\n')
 
         if not nextRow[-1] == curRow[-1]:
@@ -322,3 +312,89 @@ def SaveResultsToFile(dataFrame, maxLength = 750):
         iRow += 1
 
 
+#########################################################
+# Add a URL to the dictionary:
+# we need to check if the URL already exists and if it 
+# does we need to append to the value instead of just
+# overwriting it
+#########################################################
+
+def AddURL2Dict(dict,url,state):
+
+    # Construct the appropriate alternate URL    
+    alternateURL = ''
+    if not 'www.' in url:
+        # add www to URL
+        alternateURL = 'www.'+url
+    else:
+        # remove www from URL
+        alternateURL = url[4:]
+
+    if url in dict:
+        if not state in dict[url]:
+            dict[url] = dict[url] + ',' + state
+    else:
+        dict[url] = state
+
+    if alternateURL in dict:
+        if not state in dict[alternateURL]:
+            dict[alternateURL] = dict[alternateURL] + ',' + state
+    else:
+        dict[alternateURL] = state
+    
+    return dict
+
+
+#########################################################
+# Load all the state sorted newspapers into a dictionary
+# key = paperURL
+# value = state
+#########################################################
+
+def GetDictionaryOfStatePapers():
+    statePaperFiles = os.listdir(statePaperFilesLocation)
+
+    dictionaryOfStatePapers = {}
+
+    for filename in statePaperFiles:
+
+         # the value in the dictionary is the stateName
+        value = filename.split('.')[0]
+        
+        with open(statePaperFilesLocation + filename,'r') as openfileobject:
+            for line in openfileobject:
+                pair = line.split(',')
+                if len(pair) == 2:
+                    if not pair[1].strip() in ignoreList:
+
+                        # Clean up the URL
+                        url = pair[1].strip()
+                        if 'http://' in url:
+                            url = url[7:]
+                        if 'https://' in url:
+                            url = url[8:]
+                        if url[-1] == '/':
+                            url = url[:-1]
+     
+                        dictionaryOfStatePapers = AddURL2Dict(dictionaryOfStatePapers, url, value)
+
+    return dictionaryOfStatePapers
+
+######################################################
+# this function updates the results stats
+######################################################
+def UpdateResults(state, dictResults):
+
+    stateSplit = state.split(',')
+
+    if len(stateSplit) == 1:
+        if state in dictResults:
+            dictResults[state] += 1
+        else:
+            dictResults[state] = 1
+    else:
+        for state in stateSplit:
+            if state in dictResults:
+                dictResults[state] += 1
+            else:
+                dictResults[state] = 1

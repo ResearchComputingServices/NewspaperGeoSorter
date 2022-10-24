@@ -1,96 +1,9 @@
 import os
 import sys
 
+import Util
 from time import sleep
-from Util import *
 from RawDataHandler import *
-
-#########################################################
-# Add a URL to the dictionary:
-# we need to check if the URL already exists and if it 
-# does we need to append to the value instead of just
-# overwriting it
-#########################################################
-
-def AddURL2Dict(dict,url,state):
-
-    # Construct the appropriate alternate URL    
-    alternateURL = ''
-    if not 'www.' in url:
-        # add www to URL
-        alternateURL = 'www.'+url
-    else:
-        # remove www from URL
-        alternateURL = url[4:]
-
-    if url in dict:
-        if not state in dict[url]:
-            dict[url] = dict[url] + ',' + state
-    else:
-        dict[url] = state
-
-    if alternateURL in dict:
-        if not state in dict[alternateURL]:
-            dict[alternateURL] = dict[alternateURL] + ',' + state
-    else:
-        dict[alternateURL] = state
-    
-    return dict
-
-
-#########################################################
-# Load all the state sorted newspapers into a dictionary
-# key = paperURL
-# value = state
-#########################################################
-
-def GetDictionaryOfStatePapers():
-    statePaperFiles = os.listdir(statePaperFilesLocation)
-
-    dictionaryOfStatePapers = {}
-
-    for filename in statePaperFiles:
-
-         # the value in the dictionary is the stateName
-        value = filename.split('.')[0]
-        
-        with open(statePaperFilesLocation + filename,'r') as openfileobject:
-            for line in openfileobject:
-                pair = line.split(',')
-                if len(pair) == 2:
-                    if not pair[1].strip() in ignoreList:
-
-                        # Clean up the URL
-                        url = pair[1].strip()
-                        if 'http://' in url:
-                            url = url[7:]
-                        if 'https://' in url:
-                            url = url[8:]
-                        if url[-1] == '/':
-                            url = url[:-1]
-     
-                        dictionaryOfStatePapers = AddURL2Dict(dictionaryOfStatePapers, url, value)
-
-    return dictionaryOfStatePapers
-
-######################################################
-# this function updates the results stats
-######################################################
-def UpdateResults(state, dictResults):
-
-    stateSplit = state.split(',')
-
-    if len(stateSplit) == 1:
-        if state in dictResults:
-            dictResults[state] += 1
-        else:
-            dictResults[state] = 1
-    else:
-        for state in stateSplit:
-            if state in dictResults:
-                dictResults[state] += 1
-            else:
-                dictResults[state] = 1
 
 ######################################################
 # this function does the actual sorting
@@ -102,7 +15,7 @@ def SortArticlesInFile(year, month, filename, dictStatePapers, dictToIgnore, dic
     fullDataFrame = GetDataFrame(year, month, filename)
 
     # split the "meta data" from the article
-    metaDataList, articleDictionary = SplitDataFrame(fullDataFrame)
+    metaDataList, articleDictionary = Util.SplitDataFrame(fullDataFrame)
 
     # Loop over the article meta data
     for row in metaDataList:
@@ -121,7 +34,7 @@ def SortArticlesInFile(year, month, filename, dictStatePapers, dictToIgnore, dic
                 state = dictStatePapers[url]
 
                 # update the list of results
-                UpdateResults(state, dictResults)
+                Util.UpdateResults(state, dictResults)
 
                 resultString = state
                 
@@ -141,45 +54,55 @@ def SortArticlesInFile(year, month, filename, dictStatePapers, dictToIgnore, dic
     # this is only needed for debugging
     if debugFlag:
         for row in metaDataList:
-            DisplayRow(row)
+            Util.DisplayRow(row)
             if row[-1] == 'NOT FOUND':
                 input()
 
     # This function splits articles with multiple states into seperate rows
-    metaDataList = HandleMultiStateEntries(metaDataList)
+    metaDataList = Util.HandleMultiStateEntries(metaDataList)
 
     # Save the data to the appropriate place in the directory structure
-    SaveSortedArticles(year,month,metaDataList,articleDictionary)
+    Util.SaveSortedArticles(year,month,metaDataList,articleDictionary)
 
 ######################################################
 # This is where the main code starts
 #####################################################
 
-# Get a dictionary object where the KEY is a state and the VALUE is a list of newspaper URLs
-dictStatePapers = GetDictionaryOfStatePapers()    
-dictToIgnore = {}   # list of ignored URLS and counts number of times each is found
-dictResults = {}    # counts the number of articles from each state
+# Local testing command line call.
+# python3 ArticleSorter.py 2016,September /home/nickshiell/storage/TestSet/ /home/nickshiell/storage/TestSet/SortedByState/ ../StateNewsPaperFiles/Combined/
 
 # Make sure that the command line args are present
-if len(sys.argv) == 2:
+if len(sys.argv) == 5:
     [year,month] = sys.argv[1].split(',')
+    Util.dataLocationBase = sys.argv[2]
+    Util.resultsOutputDirectory = sys.argv[3]
+    Util.statePaperFilesLocation = sys.argv[4]
 else:
     print('ERROR: invalid command line args: ', sys.argv)
+    print('Syntax Expected: ArticleSorter YEAR,MONTH INPUT_DIR OUTPUT_DIR NEWSPAPER_DIR')
     exit(0)
 
 print("Starting Job: ", month ,' / ', year)
+print("Input Data: ", Util.dataLocationBase)
+print("Newspaper Data: ", Util.statePaperFilesLocation)
+print("Output Data: ", Util.resultsOutputDirectory)
 
-currentDirectory = dataLocationBase+year+'/'+month+'/CSV/'
-listOfFiles = listdir_nohidden(currentDirectory)
+# Get a dictionary object where the KEY is a state and the VALUE is a list of newspaper URLs
+dictStatePapers = Util.GetDictionaryOfStatePapers()    
+dictToIgnore = {}   # list of ignored URLS and counts number of times each is found
+dictResults = {}    # counts the number of articles from each state
+
+currentDirectory = Util.dataLocationBase+year+'/'+month+'/CSV/'
+listOfFiles = Util.listdir_nohidden(currentDirectory)
 
 for filename in listOfFiles:
     # this is where all the magic happens
     SortArticlesInFile(year,month,filename, dictStatePapers, dictToIgnore, dictResults, False)
 
-reprotsFileName = resultsOutputDirectory+'Reports/'+year+'_'+month+'_Report.txt'
+reprotsFileName = Util.resultsOutputDirectory+'Reports/'+year+'_'+month+'_Report.txt'
 
-ReportSortedDict(reprotsFileName,dictResults,100)
-ReportForiegnTLDs(dictToIgnore,reprotsFileName)
-ReportSortedDict(reprotsFileName,dictToIgnore,500)
+Util.ReportSortedDict(reprotsFileName,dictResults,100)
+Util.ReportForiegnTLDs(dictToIgnore,reprotsFileName)
+Util.ReportSortedDict(reprotsFileName,dictToIgnore,500)
 
 print("DONE Job: ", month ,' / ', year)
